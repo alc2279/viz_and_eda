@@ -9,3 +9,109 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+library(tidyverse)
+library(ggridges)
+```
+
+
+
+```{r data_import, cache = TRUE}
+library(rnoaa)
+
+weather_df = 
+  rnoaa::meteo_pull_monitors(c("USW00094728", "USC00519397", "USS0023B17S"),
+                      var = c("PRCP", "TMIN", "TMAX"), 
+                      date_min = "2017-01-01",
+                      date_max = "2017-12-31") %>%
+  mutate(
+    name = recode(id, USW00094728 = "CentralPark_NY", 
+                      USC00519397 = "Waikiki_HA",
+                      USS0023B17S = "Waterhole_WA"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) %>%
+  select(name, id, everything())
+weather_df
+```
+
+
+## Start a plot
+
+Blank plot ...
+
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax))
+```
+
+Scatterplot
+
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point()
+```
+
+
+```{r}
+weather_df %>% 
+  filter(name == "CentralPark_NY") %>% 
+  ggplot(aes(x = tmin, y = tmax)) + 
+  geom_point()
+```
+
+
+```{r}
+weather_sp = 
+  ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point()
+```
+
+
+## More plot options
+
+Add an aesthetic (?)
+
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name))
+```
+
+Add a geom
+
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name)) + 
+  geom_smooth(se = FALSE)
+```
+
+
+
+Add some options ...
+
+
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax, color = name)) + 
+  geom_point(alpha = 0.4) + 
+  geom_smooth(se = FALSE)
+```
+
+Facetting ...
+
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point(alpha = 0.4) + 
+  geom_smooth(se = FALSE) + 
+  facet_grid( ~ name)
+```
+
+
+A more interesting plot
+
+```{r}
+ggplot(weather_df, aes(x = date, y = tmax, color = name, size = prcp)) +
+  geom_point() + 
+  geom_smooth(se = FALSE) + 
+  facet_grid(~name)
+
+```
+
+
