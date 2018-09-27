@@ -1,0 +1,11 @@
+---
+title: "Visualization Pt 1"
+author: "Jeff Goldsmith"
+date: "9/27/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
