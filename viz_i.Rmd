@@ -17,8 +17,6 @@ library(ggridges)
 
 
 ```{r data_import, cache = TRUE}
-library(rnoaa)
-
 weather_df = 
   rnoaa::meteo_pull_monitors(c("USW00094728", "USC00519397", "USS0023B17S"),
                       var = c("PRCP", "TMIN", "TMAX"), 
@@ -177,4 +175,28 @@ weather_plot = ggplot(weather_df, aes(x = tmin, y = tmax)) +
 
 ggsave("./results/weather_plot.pdf", weather_plot, width = 8, height = 5)
 ```
+
+
+## Last example
+
+Make a bunch of plots!!
+
+```{r}
+ggplot(weather_df, aes(y = prcp, x = name)) + 
+  geom_boxplot()
+```
+
+```{r}
+ggplot(weather_df, aes(y = prcp, x = name)) + 
+  geom_violin()
+```
+
+```{r}
+weather_df %>% 
+  filter(prcp > 0) %>% 
+  ggplot(aes(x = prcp, fill = name)) + 
+  geom_density(alpha = .5)
+```
+
+
 
