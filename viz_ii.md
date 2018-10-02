@@ -108,3 +108,168 @@ ggplot(weather_df, aes(x = tmin, y = tmax)) +
     ## Warning: Removed 15 rows containing missing values (geom_point).
 
 <img src="viz_ii_files/figure-markdown_github/unnamed-chunk-3-1.png" width="90%" />
+
+``` r
+ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  ) + 
+  scale_x_continuous(
+    breaks = c(-15, 0, 15),
+    labels = c("-15 deg C", "0", "15"),
+    limits = c(-20, 42)
+  ) + 
+  scale_y_continuous(
+    position = "right",
+    trans = "sqrt"
+  )
+```
+
+    ## Warning in self$trans$transform(x): NaNs produced
+
+    ## Warning: Transformation introduced infinite values in continuous y-axis
+
+    ## Warning: Removed 90 rows containing missing values (geom_point).
+
+<img src="viz_ii_files/figure-markdown_github/unnamed-chunk-4-1.png" width="90%" />
+
+Colors
+------
+
+Adjust color
+
+``` r
+ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  ) + 
+  scale_color_hue(
+    name = "Location",
+    h = c(100, 350),
+    l = 75
+  )
+```
+
+    ## Warning: Removed 15 rows containing missing values (geom_point).
+
+<img src="viz_ii_files/figure-markdown_github/unnamed-chunk-5-1.png" width="90%" />
+
+Viridis
+
+``` r
+ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  ) + 
+  viridis::scale_color_viridis(
+    name = "Location",
+    discrete = TRUE
+  ) +
+  theme(legend.position = "bottom")
+```
+
+    ## Warning: Removed 15 rows containing missing values (geom_point).
+
+<img src="viz_ii_files/figure-markdown_github/unnamed-chunk-6-1.png" width="90%" />
+
+Themes
+------
+
+``` r
+ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  ) + 
+  viridis::scale_color_viridis(
+    name = "Location",
+    discrete = TRUE
+  ) +
+  ggthemes::theme_fivethirtyeight()
+```
+
+    ## Warning: Removed 15 rows containing missing values (geom_point).
+
+<img src="viz_ii_files/figure-markdown_github/unnamed-chunk-7-1.png" width="90%" />
+
+``` r
+ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  ) + 
+  viridis::scale_color_viridis(
+    name = "Location",
+    discrete = TRUE
+  ) +
+  theme_bw() + 
+  theme(legend.position = "bottom")
+```
+
+    ## Warning: Removed 15 rows containing missing values (geom_point).
+
+<img src="viz_ii_files/figure-markdown_github/unnamed-chunk-8-1.png" width="90%" />
+
+``` r
+ggplot(weather_df, aes(x = date, y = tmax, color = name)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE) +
+  labs(
+    title = "Temperature vs date",
+    x = "Date",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  ) + 
+  viridis::scale_color_viridis(
+    name = "Location",
+    discrete = TRUE
+  ) +
+  theme_bw() + 
+  theme(legend.position = "bottom")
+```
+
+    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
+
+    ## Warning: Removed 3 rows containing non-finite values (stat_smooth).
+
+    ## Warning: Removed 3 rows containing missing values (geom_point).
+
+<img src="viz_ii_files/figure-markdown_github/unnamed-chunk-9-1.png" width="90%" />
+
+Arguments to `geom_*`
+---------------------
+
+``` r
+centralpark_df = weather_df %>% filter(name == "CentralPark_NY")
+waikiki_df = weather_df %>% filter(name == "Waikiki_HA")
+
+
+ggplot(waikiki_df, aes(x = date, y = tmax, color = name)) + 
+  geom_point() +
+  geom_point(data = centralpark_df)
+```
+
+    ## Warning: Removed 3 rows containing missing values (geom_point).
+
+<img src="viz_ii_files/figure-markdown_github/unnamed-chunk-10-1.png" width="90%" />
+
+patchwork
+---------

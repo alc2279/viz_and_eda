@@ -69,3 +69,133 @@ ggplot(weather_df, aes(x = tmin, y = tmax)) +
   )
 ```
 
+
+
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  ) + 
+  scale_x_continuous(
+    breaks = c(-15, 0, 15),
+    labels = c("-15 deg C", "0", "15"),
+    limits = c(-20, 42)
+  ) + 
+  scale_y_continuous(
+    position = "right",
+    trans = "sqrt"
+  )
+```
+
+## Colors
+
+Adjust color
+
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  ) + 
+  scale_color_hue(
+    name = "Location",
+    h = c(100, 350),
+    l = 75
+  )
+```
+
+Viridis 
+
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  ) + 
+  viridis::scale_color_viridis(
+    name = "Location",
+    discrete = TRUE
+  ) +
+  theme(legend.position = "bottom")
+```
+
+## Themes
+
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  ) + 
+  viridis::scale_color_viridis(
+    name = "Location",
+    discrete = TRUE
+  ) +
+  ggthemes::theme_fivethirtyeight()
+```
+
+
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  ) + 
+  viridis::scale_color_viridis(
+    name = "Location",
+    discrete = TRUE
+  ) +
+  theme_bw() + 
+  theme(legend.position = "bottom")
+```
+
+
+```{r}
+ggplot(weather_df, aes(x = date, y = tmax, color = name)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE) +
+  labs(
+    title = "Temperature vs date",
+    x = "Date",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  ) + 
+  viridis::scale_color_viridis(
+    name = "Location",
+    discrete = TRUE
+  ) +
+  theme_bw() + 
+  theme(legend.position = "bottom")
+```
+
+
+## Arguments to `geom_*`
+
+```{r}
+centralpark_df = weather_df %>% filter(name == "CentralPark_NY")
+waikiki_df = weather_df %>% filter(name == "Waikiki_HA")
+
+
+ggplot(waikiki_df, aes(x = date, y = tmax, color = name)) + 
+  geom_point() +
+  geom_point(data = centralpark_df)
+```
+
+
+## patchwork
