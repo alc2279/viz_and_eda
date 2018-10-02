@@ -13,14 +13,14 @@ knitr::opts_chunk$set(
 library(tidyverse)
 ```
 
-    ## ── Attaching packages ───────────────────────────────────────────────────── tidyverse 1.2.1 ──
+    ## ── Attaching packages ─────────────────── tidyverse 1.2.1 ──
 
     ## ✔ ggplot2 3.0.0     ✔ purrr   0.2.5
     ## ✔ tibble  1.4.2     ✔ dplyr   0.7.6
     ## ✔ tidyr   0.8.1     ✔ stringr 1.3.1
     ## ✔ readr   1.1.1     ✔ forcats 0.3.0
 
-    ## ── Conflicts ──────────────────────────────────────────────────────── tidyverse_conflicts() ──
+    ## ── Conflicts ────────────────────── tidyverse_conflicts() ──
     ## ✖ dplyr::filter() masks stats::filter()
     ## ✖ dplyr::lag()    masks stats::lag()
 
@@ -34,6 +34,10 @@ library(ggridges)
     ## The following object is masked from 'package:ggplot2':
     ## 
     ##     scale_discrete_manual
+
+``` r
+library(patchwork)
+```
 
 Data import.
 
@@ -273,3 +277,118 @@ ggplot(waikiki_df, aes(x = date, y = tmax, color = name)) +
 
 patchwork
 ---------
+
+``` r
+ggplot(weather_df, aes(x = date, y = tmax, color = name)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE) +
+  facet_grid(~name) + 
+  labs(
+    title = "Temperature vs date",
+    x = "Date",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  ) + 
+  viridis::scale_color_viridis(
+    name = "Location",
+    discrete = TRUE
+  ) +
+  theme_bw() + 
+  theme(legend.position = "bottom")
+```
+
+    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
+
+    ## Warning: Removed 3 rows containing non-finite values (stat_smooth).
+
+    ## Warning: Removed 3 rows containing missing values (geom_point).
+
+<img src="viz_ii_files/figure-markdown_github/unnamed-chunk-11-1.png" width="90%" />
+
+``` r
+devtools::install_github("thomasp85/patchwork")
+library(patchwork)
+```
+
+``` r
+tmax_tmin_p = ggplot(weather_df, aes(x = tmax, y = tmin, color = name)) + 
+  geom_point(alpha = .5) +
+  theme(legend.position = "none")
+
+prcp_dens_p = weather_df %>% 
+  filter(prcp > 0) %>% 
+  ggplot(aes(x = prcp, fill = name)) + 
+  geom_density(alpha = .5) + 
+  theme(legend.position = "none")
+
+tmax_date_p = ggplot(weather_df, aes(x = date, y = tmax, color = name)) + 
+  geom_point(alpha = .5) +
+  geom_smooth(se = FALSE) + 
+  theme(legend.position = "bottom")
+
+(tmax_tmin_p + prcp_dens_p) / tmax_date_p
+```
+
+    ## Warning: Removed 15 rows containing missing values (geom_point).
+
+    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
+
+    ## Warning: Removed 3 rows containing non-finite values (stat_smooth).
+
+    ## Warning: Removed 3 rows containing missing values (geom_point).
+
+<img src="viz_ii_files/figure-markdown_github/unnamed-chunk-13-1.png" width="90%" />
+
+Data manipulation
+-----------------
+
+factors ...
+
+``` r
+ggplot(weather_df, aes(x = name, y = tmax, fill = name)) + 
+  geom_violin()
+```
+
+    ## Warning: Removed 3 rows containing non-finite values (stat_ydensity).
+
+<img src="viz_ii_files/figure-markdown_github/unnamed-chunk-14-1.png" width="90%" />
+
+``` r
+weather_df %>%
+  mutate(name = forcats::fct_relevel(name, c("Waikiki_HA", "CentralPark_NY", "Waterhole_WA"))) %>% 
+  ggplot(aes(x = name, y = tmax)) + 
+  geom_violin(aes(fill = name), color = "blue", alpha = .5) + 
+  theme(legend.position = "bottom")
+```
+
+    ## Warning: Removed 3 rows containing non-finite values (stat_ydensity).
+
+<img src="viz_ii_files/figure-markdown_github/unnamed-chunk-15-1.png" width="90%" />
+
+``` r
+weather_df %>%
+  mutate(name = forcats::fct_reorder(name, tmax)) %>% 
+  ggplot(aes(x = name, y = tmax)) + 
+  geom_violin(aes(fill = name), color = "blue", alpha = .5) + 
+  theme(legend.position = "bottom")
+```
+
+    ## Warning: Removed 3 rows containing non-finite values (stat_ydensity).
+
+<img src="viz_ii_files/figure-markdown_github/unnamed-chunk-16-1.png" width="90%" />
+
+Advanced tidying ...
+
+``` r
+weather_df %>%
+  select(name, tmax, tmin) %>% 
+  gather(key = observation, value = temp, tmax:tmin) %>% 
+  ggplot(aes(x = temp, fill = observation)) +
+  geom_density(alpha = .5) + 
+  facet_grid(~name) + 
+  viridis::scale_fill_viridis(discrete = TRUE)
+```
+
+    ## Warning: Removed 18 rows containing non-finite values (stat_density).
+
+<img src="viz_ii_files/figure-markdown_github/unnamed-chunk-17-1.png" width="90%" />
