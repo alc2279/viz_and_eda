@@ -98,7 +98,58 @@ Tidy is not always best for humans ...
 weather_df %>% 
   group_by(name, month) %>% 
   summarize(mean_tmax = mean(tmax, na.rm = TRUE)) %>% 
-  spread(key = month, value = mean_tmax) %>% 
+  spread(key = name, value = mean_tmax) %>% 
   knitr::kable(digits = 3)
+```
+
+
+## Grouped mutate
+
+```{r}
+weather_df %>% 
+  group_by(name, month) %>% 
+  mutate(mean_tmax = mean(tmax, na.rm = TRUE))
+```
+
+
+More interesting example ...
+
+```{r}
+weather_df %>% 
+  group_by(name) %>% 
+  mutate(mean_tmax = mean(tmax, na.rm = TRUE),
+         centered_tmax = tmax - mean_tmax) %>% 
+  ggplot(aes(x = date, y = centered_tmax, color = name)) +
+  geom_point()
+```
+
+
+## Window functions
+
+Use ranks
+
+```{r}
+weather_df %>% 
+  group_by(name, month) %>% 
+  mutate(tmax_rank = min_rank(desc(tmax))) %>% 
+  filter(tmax_rank < 2)
+```
+
+Use lags
+
+```{r}
+weather_df %>% 
+  group_by(name) %>% 
+  mutate(lag_tmax = lag(tmax))
+```
+
+
+## How neat is this??
+
+```{r}
+weather_df %>% 
+  group_by(name) %>% 
+  mutate(one_day_change = tmax - lag(tmax)) %>% 
+  summarize(sd_one_day_change = sd(one_day_change, na.rm = TRUE))
 ```
 

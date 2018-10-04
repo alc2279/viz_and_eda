@@ -7,14 +7,14 @@ Jeff Goldsmith
 library(tidyverse)
 ```
 
-    ## ── Attaching packages ────────────────────────────────────── tidyverse 1.2.1 ──
+    ## ── Attaching packages ──────────────────────────────────────────── tidyverse 1.2.1 ──
 
     ## ✔ ggplot2 3.0.0     ✔ purrr   0.2.5
     ## ✔ tibble  1.4.2     ✔ dplyr   0.7.6
     ## ✔ tidyr   0.8.1     ✔ stringr 1.3.1
     ## ✔ readr   1.1.1     ✔ forcats 0.3.0
 
-    ## ── Conflicts ───────────────────────────────────────── tidyverse_conflicts() ──
+    ## ── Conflicts ─────────────────────────────────────────────── tidyverse_conflicts() ──
     ## ✖ dplyr::filter() masks stats::filter()
     ## ✖ dplyr::lag()    masks stats::lag()
 
@@ -209,12 +209,130 @@ Tidy is not always best for humans ...
 weather_df %>% 
   group_by(name, month) %>% 
   summarize(mean_tmax = mean(tmax, na.rm = TRUE)) %>% 
-  spread(key = month, value = mean_tmax) %>% 
+  spread(key = name, value = mean_tmax) %>% 
   knitr::kable(digits = 3)
 ```
 
-| name            |  2017-01-01|  2017-02-01|  2017-03-01|  2017-04-01|  2017-05-01|  2017-06-01|  2017-07-01|  2017-08-01|  2017-09-01|  2017-10-01|  2017-11-01|  2017-12-01|
-|:----------------|-----------:|-----------:|-----------:|-----------:|-----------:|-----------:|-----------:|-----------:|-----------:|-----------:|-----------:|-----------:|
-| CentralPark\_NY |       5.977|       9.282|       8.223|      18.273|      20.090|      26.263|      28.739|      27.194|      25.433|      21.787|      12.290|       4.474|
-| Waikiki\_HA     |      27.758|      27.218|      29.077|      29.713|      30.107|      31.310|      31.760|      32.016|      31.743|      30.287|      28.383|      26.461|
-| Waterhole\_WA   |      -1.400|      -0.018|       1.674|       3.873|      10.097|      12.873|      16.326|      19.645|      14.160|       8.313|       1.380|       2.213|
+| month      |  CentralPark\_NY|  Waikiki\_HA|  Waterhole\_WA|
+|:-----------|----------------:|------------:|--------------:|
+| 2017-01-01 |            5.977|       27.758|         -1.400|
+| 2017-02-01 |            9.282|       27.218|         -0.018|
+| 2017-03-01 |            8.223|       29.077|          1.674|
+| 2017-04-01 |           18.273|       29.713|          3.873|
+| 2017-05-01 |           20.090|       30.107|         10.097|
+| 2017-06-01 |           26.263|       31.310|         12.873|
+| 2017-07-01 |           28.739|       31.760|         16.326|
+| 2017-08-01 |           27.194|       32.016|         19.645|
+| 2017-09-01 |           25.433|       31.743|         14.160|
+| 2017-10-01 |           21.787|       30.287|          8.313|
+| 2017-11-01 |           12.290|       28.383|          1.380|
+| 2017-12-01 |            4.474|       26.461|          2.213|
+
+Grouped mutate
+--------------
+
+``` r
+weather_df %>% 
+  group_by(name, month) %>% 
+  mutate(mean_tmax = mean(tmax, na.rm = TRUE))
+```
+
+    ## # A tibble: 1,095 x 8
+    ## # Groups:   name, month [36]
+    ##    name        id        date        prcp  tmax  tmin month      mean_tmax
+    ##    <chr>       <chr>     <date>     <dbl> <dbl> <dbl> <date>         <dbl>
+    ##  1 CentralPar… USW00094… 2017-01-01     0   8.9   4.4 2017-01-01      5.98
+    ##  2 CentralPar… USW00094… 2017-01-02    53   5     2.8 2017-01-01      5.98
+    ##  3 CentralPar… USW00094… 2017-01-03   147   6.1   3.9 2017-01-01      5.98
+    ##  4 CentralPar… USW00094… 2017-01-04     0  11.1   1.1 2017-01-01      5.98
+    ##  5 CentralPar… USW00094… 2017-01-05     0   1.1  -2.7 2017-01-01      5.98
+    ##  6 CentralPar… USW00094… 2017-01-06    13   0.6  -3.8 2017-01-01      5.98
+    ##  7 CentralPar… USW00094… 2017-01-07    81  -3.2  -6.6 2017-01-01      5.98
+    ##  8 CentralPar… USW00094… 2017-01-08     0  -3.8  -8.8 2017-01-01      5.98
+    ##  9 CentralPar… USW00094… 2017-01-09     0  -4.9  -9.9 2017-01-01      5.98
+    ## 10 CentralPar… USW00094… 2017-01-10     0   7.8  -6   2017-01-01      5.98
+    ## # ... with 1,085 more rows
+
+More interesting example ...
+
+``` r
+weather_df %>% 
+  group_by(name) %>% 
+  mutate(mean_tmax = mean(tmax, na.rm = TRUE),
+         centered_tmax = tmax - mean_tmax) %>% 
+  ggplot(aes(x = date, y = centered_tmax, color = name)) +
+  geom_point()
+```
+
+    ## Warning: Removed 3 rows containing missing values (geom_point).
+
+<img src="eda_files/figure-markdown_github/unnamed-chunk-9-1.png" width="90%" />
+
+Window functions
+----------------
+
+Use ranks
+
+``` r
+weather_df %>% 
+  group_by(name, month) %>% 
+  mutate(tmax_rank = min_rank(desc(tmax))) %>% 
+  filter(tmax_rank < 2)
+```
+
+    ## # A tibble: 75 x 8
+    ## # Groups:   name, month [36]
+    ##    name        id        date        prcp  tmax  tmin month      tmax_rank
+    ##    <chr>       <chr>     <date>     <dbl> <dbl> <dbl> <date>         <int>
+    ##  1 CentralPar… USW00094… 2017-01-12    13  18.9   8.3 2017-01-01         1
+    ##  2 CentralPar… USW00094… 2017-02-24     0  21.1  14.4 2017-02-01         1
+    ##  3 CentralPar… USW00094… 2017-03-01    30  21.1  12.2 2017-03-01         1
+    ##  4 CentralPar… USW00094… 2017-04-16     0  30.6  15   2017-04-01         1
+    ##  5 CentralPar… USW00094… 2017-05-18     0  33.3  23.9 2017-05-01         1
+    ##  6 CentralPar… USW00094… 2017-06-13     0  34.4  25   2017-06-01         1
+    ##  7 CentralPar… USW00094… 2017-07-20     3  34.4  25   2017-07-01         1
+    ##  8 CentralPar… USW00094… 2017-08-01     0  33.3  21.7 2017-08-01         1
+    ##  9 CentralPar… USW00094… 2017-09-24     0  32.8  20.6 2017-09-01         1
+    ## 10 CentralPar… USW00094… 2017-10-05     0  28.3  18.3 2017-10-01         1
+    ## # ... with 65 more rows
+
+Use lags
+
+``` r
+weather_df %>% 
+  group_by(name) %>% 
+  mutate(lag_tmax = lag(tmax))
+```
+
+    ## # A tibble: 1,095 x 8
+    ## # Groups:   name [3]
+    ##    name         id        date        prcp  tmax  tmin month      lag_tmax
+    ##    <chr>        <chr>     <date>     <dbl> <dbl> <dbl> <date>        <dbl>
+    ##  1 CentralPark… USW00094… 2017-01-01     0   8.9   4.4 2017-01-01     NA  
+    ##  2 CentralPark… USW00094… 2017-01-02    53   5     2.8 2017-01-01      8.9
+    ##  3 CentralPark… USW00094… 2017-01-03   147   6.1   3.9 2017-01-01      5  
+    ##  4 CentralPark… USW00094… 2017-01-04     0  11.1   1.1 2017-01-01      6.1
+    ##  5 CentralPark… USW00094… 2017-01-05     0   1.1  -2.7 2017-01-01     11.1
+    ##  6 CentralPark… USW00094… 2017-01-06    13   0.6  -3.8 2017-01-01      1.1
+    ##  7 CentralPark… USW00094… 2017-01-07    81  -3.2  -6.6 2017-01-01      0.6
+    ##  8 CentralPark… USW00094… 2017-01-08     0  -3.8  -8.8 2017-01-01     -3.2
+    ##  9 CentralPark… USW00094… 2017-01-09     0  -4.9  -9.9 2017-01-01     -3.8
+    ## 10 CentralPark… USW00094… 2017-01-10     0   7.8  -6   2017-01-01     -4.9
+    ## # ... with 1,085 more rows
+
+How neat is this??
+------------------
+
+``` r
+weather_df %>% 
+  group_by(name) %>% 
+  mutate(one_day_change = tmax - lag(tmax)) %>% 
+  summarize(sd_one_day_change = sd(one_day_change, na.rm = TRUE))
+```
+
+    ## # A tibble: 3 x 2
+    ##   name           sd_one_day_change
+    ##   <chr>                      <dbl>
+    ## 1 CentralPark_NY              4.45
+    ## 2 Waikiki_HA                  1.23
+    ## 3 Waterhole_WA                3.13
